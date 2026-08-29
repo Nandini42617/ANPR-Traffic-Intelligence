@@ -1,0 +1,28 @@
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.venv/
+venv/
+env/
+*.log
+*.cache
+.pytest_cache/
+.mypy_cache/
+
+# Local videos, inference results, crops, and debug artifacts
+videos/
+outputs/
+
+# Training datasets and experiment runs are intentionally kept local
+runs/
+number_plate_detection/
+plate_detection_dataset/
+plate_ocr/
+vechile_detection/
+
+# Model binaries are intentionally kept local; place required files here after cloning
+*.pt
+*.onnx
+*.engine
+
+.streamlit/secrets.toml
