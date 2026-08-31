@@ -1,70 +1,71 @@
 # ANPR Traffic AI
 
-## Overview
-
-Demo-ready automatic number-plate recognition and traffic analysis built around the existing project notebooks and trained weights. Users can process one or more videos, inspect camera-wise vehicle records, view annotated output, and download CSV/video results.
-
-## Architecture
-
-```text
-Video → Vehicle Detection → Vehicle Tracking → Vehicle ROI
-      → Number Plate Detection → Plate Crop → Preprocessing → OCR
-      → Temporal OCR Aggregation → Vehicle-Plate Mapping
-      → Annotated Video + CSV + Dashboard
-```
+Demo-ready automatic number-plate recognition and traffic analysis built around the project notebooks and trained weights.
 
 ## Notebook-to-production mapping
 
-- Notebook 01: vehicle dataset/model development. Its custom checkpoint is retained, but current videos use `yolo26n.pt` because Notebook 4 documented better detection with the pretrained COCO model.
-- Notebook 02: plate dataset/training. Production uses `models/number_plate_detection_best.pt`, a single-class `plate` detector.
-- Notebook 03: EasyOCR, upscale/grayscale/CLAHE/adaptive-threshold variants, cleaning, and soft Indian plate-format scoring.
-- Notebook 04: vehicle-crop plate detection, ByteTrack, camera-wise processing, and vehicle/plate association. IDs remain camera-specific; no fake cross-camera ReID is performed.
+- Notebook 01: vehicle detection dataset and model development.
+- Notebook 02: Gujarat vehicle number-plate detection dataset and training.
+- Notebook 03: EasyOCR preprocessing and plate-text recognition.
+- Notebook 04: multi-camera vehicle tracking, plate association, and OCR.
+- Production uses `yolo26n.pt` for vehicle detection and `models/number_plate_detection_best.pt` for plate detection.
 
 ## Installation
 
-```bash
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 ```
 
-After cloning, place the required local assets in these paths:
+## Project Data
 
-```text
-ANPR-Traffic-Intelligence/
-├── yolo26n.pt
-└── models/
-    └── number_plate_detection_best.pt
+Included source assets:
+
+- `vechile_detection/` (including its root image/label files and `yolo_dataset/`): vehicle detection dataset for Notebook 01.
+- `number_plate_detection/Gujarat_Vehicle_Dataset/`: plate detection dataset for Notebook 02.
+- `plate_ocr/images/`: OCR dataset for Notebook 03.
+- `videos/cam_1.mp4`, `videos/North-East.mp4`, and `videos/viofo.mp4`: test/demo videos for Notebook 04 and application testing.
+- `yolo26n.pt`, `models/vehicle_detection_best.pt`, and `models/number_plate_detection_best.pt`: required model weights.
+
+Generated outputs are excluded because they can be regenerated: `outputs/`,
+`runs/`, notebook checkpoints, plate crops, debug images, processed videos,
+caches, and Python bytecode.
+
+## Reproduce the Project
+
+```powershell
+git clone https://github.com/ka0913560-hub/ANPR-Traffic-Intelligence.git
+cd ANPR-Traffic-Intelligence
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
 ```
 
-The model binaries, videos, datasets, training runs, and generated outputs are intentionally excluded from GitHub because they are large local assets. The notebooks document how the models were developed; they do not retrain models during application use.
+Verify that `vechile_detection/`, `number_plate_detection/`, `plate_ocr/`,
+`videos/`, `yolo26n.pt`, and both files under `models/` exist. Notebooks use
+project-relative paths based on the notebook directory. Run notebooks 01–04
+in order when reproducing experiments. Notebook 04 uses `videos/viofo.mp4`
+by default and writes regenerable artifacts under `outputs/`.
 
 ## Run the application
 
-```bash
+```powershell
 python -m streamlit run app.py
 ```
 
-The UI accepts uploaded videos or multiple bundled videos from `videos/`. Configure frame stride and an optional frame limit in the sidebar.
+The UI accepts uploads or bundled videos from `videos/`.
 
 ## CLI
 
-```bash
+```powershell
 python run_pipeline.py --video videos/viofo.mp4 --max-frames 120 --frame-stride 2
 ```
 
-Add `--no-ocr` for a detector/tracker smoke test.
+Add `--no-ocr` for a detector/tracker smoke test. Results are written under
+`outputs/app/` as annotated videos, plate crops, JSON summaries, and CSV files.
 
-## Outputs
+## Limitations
 
-Results are written under `outputs/app/`:
-
-- `annotated_videos/`: annotated MP4 files with vehicle IDs, plate boxes, OCR labels, and frame numbers.
-- `plate_crops/`: detected plate crops.
-- `results/`: JSON summaries and CSV vehicle-to-plate records.
-
-The repository does not include the sample videos. Add traffic videos to `videos/` locally, or upload them through the Streamlit interface.
-
-Each vehicle record includes camera, camera-scoped vehicle ID, class, first/last timestamp, plate detection flag, recognized plate or `UNKNOWN`, OCR and plate confidence, best frame, and status.
-
-## Limitations and future improvements
-
-Plate visibility, blur, occlusion, detector confidence, and video quality strongly affect OCR. Unreadable text remains `UNKNOWN`; the application never invents plate numbers. OCR may be unavailable if its model cannot load. The current project provides camera-scoped ByteTrack IDs, not reliable cross-camera identity matching. Future work could add calibrated cross-camera ReID, better plate-specific super-resolution, and GPU deployment.
+Unreadable text remains `UNKNOWN`; the application never invents plate numbers.
+Vehicle IDs are camera-scoped ByteTrack IDs, not reliable cross-camera identity matching.
