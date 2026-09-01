@@ -25,3 +25,18 @@ plate_detection_dataset/
 !models/*.pt
 
 .streamlit/secrets.toml
+
+# Local IDE and operating-system files
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Local OCR/model caches and temporary uploads
+.easyocr/
+.cache/
+tmp/
+temp/
+*.tmp
+*.bak

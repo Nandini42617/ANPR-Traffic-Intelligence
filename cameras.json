@@ -1,0 +1,11 @@
+{
+  "metadata": {
+    "coordinates_status": "DEMO/CONFIGURABLE - replace these values with surveyed camera coordinates",
+    "timestamp_note": "Video timestamps are relative to each source video unless synchronized metadata is supplied."
+  },
+  "cameras": [
+    {"camera_id": "cam_1", "camera_name": "Camera 1", "source": "cam_1.mp4", "latitude": 23.0225, "longitude": 72.5714, "location": "Demo Sector A", "direction": "Northbound", "road_name": "Configurable demo road"},
+    {"camera_id": "cam_2", "camera_name": "North-East", "source": "North-East.mp4", "latitude": 23.0300, "longitude": 72.5800, "location": "Demo Sector B", "direction": "North-East", "road_name": "Configurable demo road"},
+    {"camera_id": "cam_3", "camera_name": "Viofo", "source": "viofo.mp4", "latitude": 23.0150, "longitude": 72.5650, "location": "Demo Sector C", "direction": "Westbound", "road_name": "Configurable demo road"}
+  ]
+}
