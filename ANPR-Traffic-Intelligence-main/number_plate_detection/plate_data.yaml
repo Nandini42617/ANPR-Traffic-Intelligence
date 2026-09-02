@@ -1,0 +1,5 @@
+path: C:\Users\lenovo\Downloads\ANPR_Traffic_AI\number_plate_detection\Gujarat_Vehicle_Dataset
+train: images/train
+val: images/val
+names:
+  0: plate

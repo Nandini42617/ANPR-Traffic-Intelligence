@@ -1,0 +1,8 @@
+path: C:\Users\lenovo\Downloads\ANPR_Traffic_AI\vechile_detection\yolo_dataset
+train: images/train
+val: images/val
+names:
+- Ambulance
+- Bus
+- Car
+- Truck

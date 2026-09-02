@@ -1,0 +1,13 @@
+streamlit
+ultralytics
+easyocr
+rapidocr_onnxruntime
+opencv-python
+numpy
+torch
+torchvision
+pandas
+pydeck
+fastapi
+uvicorn
+python-multipart

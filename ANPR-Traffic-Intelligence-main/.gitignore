@@ -1,0 +1,42 @@
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.venv/
+venv/
+env/
+*.log
+*.cache
+.pytest_cache/
+.mypy_cache/
+
+# Generated inference results, crops, and debug artifacts
+outputs/
+
+# Keep reproducible source datasets and demo inputs in the repository.
+runs/
+plate_detection_dataset/
+
+# Keep required production model binaries; other model formats remain local by default.
+*.pt
+*.onnx
+*.engine
+!yolo26n.pt
+!models/
+!models/*.pt
+
+.streamlit/secrets.toml
+
+# Local IDE and operating-system files
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Local OCR/model caches and temporary uploads
+.easyocr/
+.cache/
+tmp/
+temp/
+*.tmp
+*.bak

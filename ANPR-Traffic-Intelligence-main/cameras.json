@@ -1,0 +1,13 @@
+{
+  "metadata": {
+    "region": "New Delhi",
+    "map_center": {"latitude": 28.6139, "longitude": 77.2090},
+    "coordinates_status": "DEMO/CONFIGURABLE - replace these values with surveyed ANPR camera coordinates",
+    "timestamp_note": "Video timestamps are relative to each source video unless synchronized metadata is supplied."
+  },
+  "cameras": [
+    {"camera_id": "cam_1", "camera_name": "Camera 1", "source": "cam_1.mp4", "latitude": 28.6130, "longitude": 77.2080, "location": "New Delhi demo node 1", "direction": "Northbound", "road_name": "Configurable demo road"},
+    {"camera_id": "cam_2", "camera_name": "Camera 2", "source": "cam_2.mp4", "latitude": 28.6160, "longitude": 77.2120, "location": "New Delhi demo node 2", "direction": "Eastbound", "road_name": "Configurable demo road"},
+    {"camera_id": "cam_3", "camera_name": "Camera 3", "source": "cam_3.mp4", "latitude": 28.6110, "longitude": 77.2160, "location": "New Delhi demo node 3", "direction": "Southbound", "road_name": "Configurable demo road"}
+  ]
+}

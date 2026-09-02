@@ -1,0 +1,6 @@
+{
+  "name": "VigilantFlow AI",
+  "description": "Real-time AI-powered traffic surveillance, ANPR automated number plate recognition, trajectory tracking, macro flow analytics, and alert response command center.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
