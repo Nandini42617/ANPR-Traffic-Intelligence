@@ -1,4 +1,4 @@
-path: C:\Users\lenovo\Downloads\ANPR_Traffic_AI\vechile_detection\yolo_dataset
+path: .
 train: images/train
 val: images/val
 names:
