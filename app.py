@@ -35,23 +35,24 @@ st.set_page_config(
 
 
 # ============================================================
-# STYLING
+# CUSTOM CSS
 # ============================================================
 
 st.markdown(
     """
 <style>
+
 :root {
-    --bg:#071019;
-    --panel:#0d1722;
-    --panel2:#111e2b;
-    --line:#223244;
-    --text:#e7eef6;
-    --muted:#8ea1b5;
-    --accent:#42d6ff;
-    --green:#37d39b;
-    --red:#ff5d6c;
-    --yellow:#f5c451;
+    --bg: #071019;
+    --panel: #0d1722;
+    --panel2: #111e2b;
+    --line: #223244;
+    --text: #e7eef6;
+    --muted: #8ea1b5;
+    --accent: #42d6ff;
+    --green: #37d39b;
+    --red: #ff5d6c;
+    --yellow: #f5c451;
 }
 
 .stApp {
@@ -62,93 +63,91 @@ st.markdown(
             #071019 38%,
             #050b11 100%
         );
-    color:var(--text);
+    color: var(--text);
 }
 
 .block-container {
-    max-width:1500px;
-    padding-top:1.1rem;
-    padding-bottom:2rem;
+    max-width: 1500px;
+    padding-top: 1.1rem;
+    padding-bottom: 2rem;
 }
 
 [data-testid="stSidebar"] {
-    background:#08121c;
-    border-right:1px solid var(--line);
+    background: #08121c;
+    border-right: 1px solid var(--line);
 }
 
 [data-testid="stMetric"] {
-    background:linear-gradient(145deg,#101d2a,#0b151f);
-    border:1px solid var(--line);
-    border-radius:12px;
-    padding:12px 14px;
+    background: linear-gradient(145deg, #101d2a, #0b151f);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 12px 14px;
 }
 
 [data-testid="stMetricLabel"] {
-    color:#8ea1b5 !important;
+    color: #8ea1b5 !important;
 }
 
 [data-testid="stMetricValue"] {
-    color:#f1f7fc !important;
+    color: #f1f7fc !important;
 }
 
 .vf-brand {
-    font-size:1.7rem;
-    font-weight:800;
-    letter-spacing:.5px;
+    font-size: 1.7rem;
+    font-weight: 800;
+    letter-spacing: .5px;
 }
 
 .vf-sub {
-    color:var(--muted);
-    margin-top:-8px;
+    color: var(--muted);
+    margin-top: -8px;
 }
 
 .vf-chip {
-    display:inline-block;
-    padding:4px 9px;
-    border-radius:999px;
-    background:#102736;
-    color:#65ddff;
-    border:1px solid #1e5269;
-    font-size:.72rem;
-    margin-right:5px;
+    display: inline-block;
+    padding: 4px 9px;
+    border-radius: 999px;
+    background: #102736;
+    color: #65ddff;
+    border: 1px solid #1e5269;
+    font-size: .72rem;
+    margin-right: 5px;
 }
 
 .vf-live {
-    color:#ff6471;
-    font-weight:800;
+    color: #ff6471;
+    font-weight: 800;
 }
 
 .vf-panel {
-    background:rgba(13,23,34,.88);
-    border:1px solid var(--line);
-    border-radius:14px;
-    padding:14px;
-    margin-bottom:10px;
+    background: rgba(13, 23, 34, .88);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 10px;
 }
 
 .vf-panel-title {
-    font-weight:700;
-    margin-bottom:8px;
-}
-
-.vf-log {
-    max-height:330px;
-    overflow-y:auto;
-}
-
-.vf-row {
-    border-bottom:1px solid #1b2a39;
-    padding:9px 4px;
+    font-weight: 700;
+    margin-bottom: 8px;
 }
 
 .vf-small {
-    color:var(--muted);
-    font-size:.76rem;
+    color: var(--muted);
+    font-size: .76rem;
+}
+
+.vf-video {
+    border: 1px solid #223244;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #03070b;
 }
 
 div[data-testid="stTabs"] button {
-    color:#aebed0;
+    color: #aebed0;
 }
+
 </style>
 """,
     unsafe_allow_html=True,
@@ -160,7 +159,11 @@ div[data-testid="stTabs"] button {
 # ============================================================
 
 camera_config = Path(__file__).with_name("cameras.json")
-cameras = load_cameras(camera_config)
+
+try:
+    cameras = load_cameras(camera_config)
+except Exception:
+    cameras = {}
 
 
 # ============================================================
@@ -169,6 +172,7 @@ cameras = load_cameras(camera_config)
 
 @st.cache_resource(show_spinner=False)
 def get_pipeline(frame_stride: int, enable_ocr: bool):
+
     settings = SETTINGS.__class__(
         **{
             **SETTINGS.__dict__,
@@ -176,10 +180,13 @@ def get_pipeline(frame_stride: int, enable_ocr: bool):
         }
     )
 
-    return ANPRPipeline(
+    return (
+        ANPRPipeline(
+            settings,
+            enable_ocr=enable_ocr,
+        ),
         settings,
-        enable_ocr=enable_ocr,
-    ), settings
+    )
 
 
 # ============================================================
@@ -187,9 +194,11 @@ def get_pipeline(frame_stride: int, enable_ocr: bool):
 # ============================================================
 
 def records_frame(result: ProcessingResult) -> pd.DataFrame:
+
     rows = []
 
     for r in result.records or []:
+
         rows.append(
             {
                 "Camera": r.camera,
@@ -228,59 +237,74 @@ def show_camera_card(
     st.markdown(
         f"""
         <div class="vf-panel">
-          <div class="vf-panel-title">
-            {camera_name}
-            <span class="vf-chip">VIDEO SOURCE</span>
-            <span class="vf-live">● ANALYZED</span>
-          </div>
-          <div class="vf-small">{name}</div>
+            <div class="vf-panel-title">
+                {camera_name}
+                <span class="vf-chip">VIDEO SOURCE</span>
+                <span class="vf-live">● ANALYZED</span>
+            </div>
+
+            <div class="vf-small">
+                {name}
+            </div>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
     if result.error:
+
         st.error(result.error)
 
     elif (
         result.output_video
         and Path(result.output_video).exists()
     ):
-        st.video(result.output_video)
+
+        # Streamlit native video player
+        st.video(
+            result.output_video,
+            format="video/mp4",
+            start_time=0,
+        )
 
     else:
-        st.info("Annotated feed is not available yet.")
+
+        st.info(
+            "Annotated feed is not available yet."
+        )
 
 
 # ============================================================
-# FIXED LIVE DETECTION LOG
+# LATEST DETECTIONS
 # ============================================================
 
 def latest_detection_rows(
     events: pd.DataFrame,
 ) -> pd.DataFrame:
 
-    if events is None or events.empty:
+    if events.empty:
         return pd.DataFrame()
 
     df = events.copy()
 
     # --------------------------------------------------------
-    # IMPORTANT FIX:
-    # Never rename both normalized_plate and recognized_plate
-    # to "Plate", because that creates duplicate column names.
+    # IMPORTANT:
+    # Never create duplicate Plate columns.
+    # Prefer normalized_plate over recognized_plate.
     # --------------------------------------------------------
 
     if "normalized_plate" in df.columns:
-        df["__display_plate"] = df["normalized_plate"]
+
+        df["Plate"] = df["normalized_plate"]
 
     elif "recognized_plate" in df.columns:
-        df["__display_plate"] = df["recognized_plate"]
+
+        df["Plate"] = df["recognized_plate"]
 
     candidates = [
         "timestamp",
         "camera_id",
-        "__display_plate",
+        "Plate",
         "global_vehicle_id",
         "vehicle_class",
         "confidence",
@@ -294,22 +318,14 @@ def latest_detection_rows(
     ]
 
     if not cols:
-        out = df.tail(12).copy()
 
-        # Final duplicate-column protection
-        out = out.loc[
-            :,
-            ~out.columns.duplicated()
-        ]
-
-        return out
+        return df.tail(12).copy()
 
     out = df[cols].tail(12).copy()
 
     rename = {
         "timestamp": "Time",
         "camera_id": "Camera",
-        "__display_plate": "Plate",
         "global_vehicle_id": "Vehicle ID",
         "vehicle_class": "Class",
         "confidence": "Confidence",
@@ -324,11 +340,7 @@ def latest_detection_rows(
         }
     )
 
-    # --------------------------------------------------------
-    # FINAL SAFETY:
-    # Remove ANY duplicate column names before st.dataframe()
-    # --------------------------------------------------------
-
+    # Final safety check
     out = out.loc[
         :,
         ~out.columns.duplicated()
@@ -342,18 +354,22 @@ def latest_detection_rows(
 # ============================================================
 
 st.markdown(
-    '<div class="vf-brand">'
-    '◉ VigilantFlow '
-    '<span style="color:#42d6ff">AI</span>'
-    '</div>',
+    """
+    <div class="vf-brand">
+        ◉ VigilantFlow
+        <span style="color:#42d6ff">AI</span>
+    </div>
+    """,
     unsafe_allow_html=True,
 )
 
 st.markdown(
-    '<div class="vf-sub">'
-    'Intelligent ANPR • Multi-camera tracking • '
-    'Traffic intelligence • Real-time-style operations dashboard'
-    '</div>',
+    """
+    <div class="vf-sub">
+        Intelligent ANPR • Multi-camera tracking •
+        Traffic intelligence • Real-time-style operations dashboard
+    </div>
+    """,
     unsafe_allow_html=True,
 )
 
@@ -368,7 +384,12 @@ with st.sidebar:
 
     uploads = st.file_uploader(
         "Add CCTV / traffic video feeds",
-        type=["mp4", "avi", "mov", "mkv"],
+        type=[
+            "mp4",
+            "avi",
+            "mov",
+            "mkv",
+        ],
         accept_multiple_files=True,
     )
 
@@ -412,13 +433,18 @@ with st.sidebar:
         "Clear dashboard",
         use_container_width=True,
     ):
+
         for key in (
             "results",
             "events",
             "alerts",
             "anomalies",
         ):
-            st.session_state.pop(key, None)
+
+            st.session_state.pop(
+                key,
+                None,
+            )
 
         st.rerun()
 
@@ -431,12 +457,17 @@ if start:
 
     sources = []
 
-    # Uploaded files
+    # --------------------------------------------------------
+    # Uploaded videos
+    # --------------------------------------------------------
+
     for upload in uploads or []:
 
         temp = tempfile.NamedTemporaryFile(
             delete=False,
-            suffix=Path(upload.name).suffix or ".mp4",
+            suffix=Path(
+                upload.name
+            ).suffix or ".mp4",
         )
 
         temp.write(
@@ -452,7 +483,10 @@ if start:
             )
         )
 
+    # --------------------------------------------------------
     # Project videos
+    # --------------------------------------------------------
+
     sources.extend(
         (
             SETTINGS.videos_dir / name,
@@ -477,7 +511,9 @@ if start:
             }
         )
 
-        all_results: list[ProcessingResult] = []
+        all_results: list[
+            ProcessingResult
+        ] = []
 
         progress = st.progress(
             0,
@@ -491,6 +527,10 @@ if start:
                 use_ocr,
             )
 
+            # ------------------------------------------------
+            # Process each camera
+            # ------------------------------------------------
+
             for index, (
                 source,
                 display_name,
@@ -499,7 +539,10 @@ if start:
                 output = (
                     settings.output_dir
                     / "annotated_videos"
-                    / f"{Path(display_name).stem}_processed.mp4"
+                    / (
+                        f"{Path(display_name).stem}"
+                        "_processed.mp4"
+                    )
                 )
 
                 output.parent.mkdir(
@@ -510,13 +553,20 @@ if start:
                 result = pipeline.process_video(
                     source,
                     output,
-                    max_frames=int(limit) or None,
-                    progress=lambda done, total, i=index: (
-                        progress.progress(
+                    max_frames=(
+                        int(limit)
+                        if int(limit)
+                        else None
+                    ),
+                    progress=(
+                        lambda done,
+                        total,
+                        i=index: progress.progress(
                             min(
                                 (
                                     i
-                                    + done / max(total, 1)
+                                    + done
+                                    / max(total, 1)
                                 )
                                 / len(sources),
                                 1.0,
@@ -524,27 +574,45 @@ if start:
                             text=(
                                 f"Analyzing "
                                 f"{display_name}: "
-                                f"frame {done}/{total}"
+                                f"frame "
+                                f"{done}/{total}"
                             ),
                         )
                     ),
                 )
 
-                all_results.append(result)
+                all_results.append(
+                    result
+                )
 
             progress.progress(
                 1.0,
                 text="AI monitoring completed",
             )
 
-            assign_global_ids(all_results)
+            # ------------------------------------------------
+            # Global vehicle IDs
+            # ------------------------------------------------
+
+            assign_global_ids(
+                all_results
+            )
+
+            # ------------------------------------------------
+            # Save individual results
+            # ------------------------------------------------
 
             for completed in all_results:
 
                 save_result(
                     completed,
-                    settings.output_dir / "results",
+                    settings.output_dir
+                    / "results",
                 )
+
+            # ------------------------------------------------
+            # Multi-camera analytics
+            # ------------------------------------------------
 
             events = build_events(
                 all_results,
@@ -561,6 +629,10 @@ if start:
             anomalies = route_anomalies(
                 events
             )
+
+            # ------------------------------------------------
+            # CSV exports
+            # ------------------------------------------------
 
             out = (
                 settings.output_dir
@@ -587,6 +659,10 @@ if start:
                 index=False,
             )
 
+            # ------------------------------------------------
+            # Store in session
+            # ------------------------------------------------
+
             st.session_state.update(
                 results=all_results,
                 events=events,
@@ -604,35 +680,29 @@ if start:
 
 
 # ============================================================
-# DASHBOARD DATA
+# DASHBOARD STATE
 # ============================================================
 
-results: list[ProcessingResult] = (
-    st.session_state.get(
-        "results",
-        [],
-    )
+results: list[
+    ProcessingResult
+] = st.session_state.get(
+    "results",
+    [],
 )
 
-events: pd.DataFrame = (
-    st.session_state.get(
-        "events",
-        pd.DataFrame(),
-    )
+events: pd.DataFrame = st.session_state.get(
+    "events",
+    pd.DataFrame(),
 )
 
-alerts: pd.DataFrame = (
-    st.session_state.get(
-        "alerts",
-        pd.DataFrame(),
-    )
+alerts: pd.DataFrame = st.session_state.get(
+    "alerts",
+    pd.DataFrame(),
 )
 
-anomalies: pd.DataFrame = (
-    st.session_state.get(
-        "anomalies",
-        pd.DataFrame(),
-    )
+anomalies: pd.DataFrame = st.session_state.get(
+    "anomalies",
+    pd.DataFrame(),
 )
 
 
@@ -644,23 +714,34 @@ if not results:
 
     st.markdown(
         """
-        <div class="vf-panel"
-             style="text-align:center;padding:55px 20px;">
+        <div
+            class="vf-panel"
+            style="
+                text-align:center;
+                padding:55px 20px;
+            "
+        >
 
-          <div style="font-size:3rem;">◉</div>
+            <div style="font-size:3rem;">
+                ◉
+            </div>
 
-          <h2>
-            Traffic Intelligence Command Center
-          </h2>
+            <h2>
+                Traffic Intelligence Command Center
+            </h2>
 
-          <p style="color:#8ea1b5;">
+            <p style="color:#8ea1b5;">
 
-            Add one or more CCTV feeds from the left
-            panel to activate vehicle detection,
-            number-plate OCR, cross-camera identity,
-            alerts, trajectories and analytics.
+                Add one or more CCTV feeds
+                from the left panel to activate
+                vehicle detection,
+                number-plate OCR,
+                cross-camera identity,
+                alerts,
+                trajectories
+                and analytics.
 
-          </p>
+            </p>
 
         </div>
         """,
@@ -705,17 +786,17 @@ kpi[3].metric(
 
 kpi[4].metric(
     "CAMERAS",
-    (
-        events.camera_id.nunique()
-        if not events.empty
-        else 0
-    ),
+    events.camera_id.nunique()
+    if not events.empty
+    else 0,
 )
 
 kpi[5].metric(
     "ACTIVE ALERTS",
-    len(alerts) + len(anomalies),
+    len(alerts)
+    + len(anomalies),
 )
+
 
 st.write("")
 
@@ -731,16 +812,20 @@ feed_col, log_col = st.columns(
 
 
 # ============================================================
-# LIVE FEEDS
+# VIDEO FEEDS
 # ============================================================
 
 with feed_col:
 
     st.markdown(
-        '<div class="vf-panel-title">'
-        'LIVE DETECTION FEEDS '
-        '<span class="vf-chip">AI VISION</span>'
-        '</div>',
+        """
+        <div class="vf-panel-title">
+            LIVE DETECTION FEEDS
+            <span class="vf-chip">
+                AI VISION
+            </span>
+        </div>
+        """,
         unsafe_allow_html=True,
     )
 
@@ -773,9 +858,11 @@ with feed_col:
 with log_col:
 
     st.markdown(
-        '<div class="vf-panel-title">'
-        'LIVE DETECTION LOG'
-        '</div>',
+        """
+        <div class="vf-panel-title">
+            LIVE DETECTION LOG
+        </div>
+        """,
         unsafe_allow_html=True,
     )
 
@@ -799,11 +886,12 @@ with log_col:
         )
 
 
+st.divider()
+
+
 # ============================================================
 # TABS
 # ============================================================
-
-st.divider()
 
 tab1, tab2, tab3, tab4 = st.tabs(
     [
@@ -953,14 +1041,16 @@ with tab1:
                 st.pydeck_chart(
                     pdk.Deck(
                         layers=layers,
-                        initial_view_state=pdk.ViewState(
-                            latitude=float(
-                                points.latitude.mean()
-                            ),
-                            longitude=float(
-                                points.longitude.mean()
-                            ),
-                            zoom=12,
+                        initial_view_state=(
+                            pdk.ViewState(
+                                latitude=float(
+                                    points.latitude.mean()
+                                ),
+                                longitude=float(
+                                    points.longitude.mean()
+                                ),
+                                zoom=12,
+                            )
                         ),
                         tooltip={
                             "text":
@@ -1081,14 +1171,16 @@ with tab2:
                             radius_pixels=55,
                         )
                     ],
-                    initial_view_state=pdk.ViewState(
-                        latitude=float(
-                            heat.latitude.mean()
-                        ),
-                        longitude=float(
-                            heat.longitude.mean()
-                        ),
-                        zoom=11,
+                    initial_view_state=(
+                        pdk.ViewState(
+                            latitude=float(
+                                heat.latitude.mean()
+                            ),
+                            longitude=float(
+                                heat.longitude.mean()
+                            ),
+                            zoom=11,
+                        )
                     ),
                 ),
                 use_container_width=True,
@@ -1168,8 +1260,10 @@ with tab4:
     ):
 
         st.markdown(
-            f"### Camera {index + 1} — "
-            f"{Path(result.input_video).name}"
+            f"""
+            ### Camera {index + 1}
+            — {Path(result.input_video).name}
+            """
         )
 
         if result.error:
@@ -1223,6 +1317,7 @@ st.divider()
 d1, d2, d3 = st.columns(3)
 
 
+# Vehicle events
 with d1:
 
     st.download_button(
@@ -1235,6 +1330,7 @@ with d1:
     )
 
 
+# Annotated video
 with d2:
 
     annotated = [
@@ -1264,6 +1360,7 @@ with d2:
         )
 
 
+# Information
 with d3:
 
     st.caption(
