@@ -1,47 +1,28 @@
-def latest_detection_rows(events: pd.DataFrame) -> pd.DataFrame:
-    if events.empty:
-        return pd.DataFrame()
+import streamlit as st
 
-    df = events.copy()
+st.set_page_config(
+    page_title="ANPR Traffic Intelligence",
+    page_icon="🚦",
+    layout="wide"
+)
 
-    # Avoid duplicate output column names.
-    # Prefer normalized_plate, otherwise use recognized_plate.
-    if "normalized_plate" in df.columns:
-        df["Plate"] = df["normalized_plate"]
-    elif "recognized_plate" in df.columns:
-        df["Plate"] = df["recognized_plate"]
+st.title("🚦 Traffic Intelligence Command Center")
 
-    candidates = [
-        "timestamp",
-        "camera_id",
-        "Plate",
-        "global_vehicle_id",
-        "vehicle_class",
-        "confidence",
-        "status",
-    ]
+st.success("✅ Streamlit app is running successfully!")
 
-    cols = [c for c in candidates if c in df.columns]
+st.write("ANPR Traffic Intelligence test page")
 
-    if not cols:
-        return df.tail(12).copy()
+col1, col2, col3 = st.columns(3)
 
-    out = df[cols].tail(12).copy()
+with col1:
+    st.metric("TOTAL VEHICLES", 0)
 
-    rename = {
-        "timestamp": "Time",
-        "camera_id": "Camera",
-        "global_vehicle_id": "Vehicle ID",
-        "vehicle_class": "Class",
-        "confidence": "Confidence",
-        "status": "Status",
-    }
+with col2:
+    st.metric("DETECTIONS", 0)
 
-    out = out.rename(
-        columns={k: v for k, v in rename.items() if k in out.columns}
-    )
+with col3:
+    st.metric("PLATES READ", 0)
 
-    # Final safety check: remove any duplicate column names.
-    out = out.loc[:, ~out.columns.duplicated()]
+st.divider()
 
-    return out.iloc[::-1]
+st.info("If you can see this page, Streamlit is working. The problem is inside the previous app.py code.")
