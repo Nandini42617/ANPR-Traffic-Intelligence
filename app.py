@@ -587,4 +587,3 @@ with d3:
         "Global IDs are plate-backed. UNKNOWN vehicles remain "
         "camera-scoped unless appearance ReID is enabled."
     )
-
